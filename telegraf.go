@@ -74,6 +74,9 @@ func (t *ClientImpl) WritePoint(p *Metric) error {
 func (t *ClientImpl) WritePoints(p []*Metric) error {
 	var pointArr []string
 	for _, m := range p {
+		if m.Fields == nil {
+			return &InvalidUsageError{"metrics must include at least 1 field"}
+		}
 		pointArr = append(pointArr, m.toLP(true))
 	}
 	_, err := fmt.Fprintln(t.conn, strings.Join(pointArr, "\n"))
