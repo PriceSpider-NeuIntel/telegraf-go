@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// InvalidUsageError used to describe when an API is used
+// incorrectly or in a way that would clash with CLP
+type InvalidUsageError struct {
+	s string
+}
+
+func (e *InvalidUsageError) Error() string {
+	return e.s
+}
+
 func createDialConn(addr string) (net.Conn, error) {
 	URL, err := url.Parse(addr)
 	if err != nil {
@@ -52,6 +62,10 @@ func (t *ClientImpl) Close() {
 // WritePoint will write a single metric. For multiple metrics at once,
 // use WritePoints.
 func (t *ClientImpl) WritePoint(p *Metric) error {
+	if p.Fields == nil {
+		return &InvalidUsageError{"metrics must include at least 1 field"}
+	}
+
 	_, err := fmt.Fprintln(t.conn, p.toLP(true))
 	return err
 }
